@@ -65,7 +65,7 @@ Additionally, the following files are required:
 - (a) Launch the Anaconda prompt/terminal and navigate the the working directory.
 - (b) Run `conda env create -f environment.yml` to setup the correct Python environment.
 - (c) Run `conda activate pseudoscales.env` to activate the Python environment.
-- The project can be discontinued and resumed later, but upon newly launching the Anaconda terminal, always repeat steps (a) and (c).
+- The project can be discontinued and resumed later, but before resuming, always repeat steps (a) and (c).
 
 ## Running the code
 
