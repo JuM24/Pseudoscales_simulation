@@ -64,7 +64,7 @@ Additionally, the following files are required:
 3. Install Python via the Anaconda distribution (https://www.anaconda.com/download/success) and perform the following steps:
 - (a) Launch the Anaconda prompt/terminal and navigate the the working directory.
 - (b) Run `conda env create -f environment.yml` to setup the correct Python environment.
-- (c) Run `conda activate pseudoscales.env` to activate the Python environment.
+- (c) Run `conda activate pseudoscales_env` to activate the Python environment.
 - The project can be discontinued and resumed later, but before resuming, always repeat steps (a) and (c).
 
 ## Running the code
