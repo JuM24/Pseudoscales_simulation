@@ -69,4 +69,59 @@ Additionally, the following files are required:
 
 ## Running the code
 
-1. Run the scripts with the prefixes "`x_`" to "`X_`" sequentially to reproduce the results. Short descriptions are available within each script.
+1. Run the scripts with the prefixes "`0_`" to "`7_`" sequentially. Short descriptions are below (they are also available within each script):
+- `0_extract_variables.R`: extract the field IDs from the UK Biobank masterfile and save them as an “.Rds” file.
+- `1_` files: the final output (“data_period.csv”) indicates the periods of continuous ascertainment using the algorithm developed by Darke et al. ([![DOI](https://img.shields.io/badge/DOI-10.1093/jamia/ocab260-blue)](https://doi.org/10.1093/jamia/ocab260)).
+- `2_registration_periods.py`: further processing of the output frin the previous step to enable downstream analyses. Writes `data_period_long.csv` to folder.
+- `3_clean_prescriptions.py`: pre-process the UK Biobank prescriptions file. This includes - where possible - filling in missing drug names and removing invalid rows. Writes `meds_cleaned.csv` to folder.
+- `4_find_generics.py`: separates combination drugs into individual compounds, replaces brand drug names with generic names, and identifies invalid routes of administration. It saves to disk the updated data frame (`meds_de_branded.csv`) frame and a file containing some statistics on the numbers of replaced drug names (`meds_de_branded_stats.csv`).
+- `5_prepare_covariates.R`: extracts and cleans the covariates and other variables used in downstream analyses and saves them as `covariates.Rds`. Also updates the ABS masterfile (`aas_combined.csv`) to exclude drugs not prescribed in the period of interest and saves the new file (`aas_in_sample.csv`) to disk.
+- `6_generate_abs.py`: calculates for each participant their annual cumulative anticholinergic burden according to each ABS; saves the results to disk as `achb_scales.csv`. Also saves the non-anticholinergic burden according to each scale (to be used as covariate) as `achb_scales_poly_csv`.
+- `7_simulate_pseudoscales.py`: defines the function to perform the pseudoscales simulation. The details of the arguments are provided in the script. To execute the function to reproduce the pseudoscales in the manuscript, the following code displays the arguments required for (1) across-sampling for general polypharmacy, (2) across-sampling for anticholinergic polypharmacy, (3) within-sampling for general polypharmacy, and (4) within-sampling for anticholinergic polypharmacy.
+```Python
+pseudo_scales(file = 'meds_de_branded.csv', 
+              version = 'across',
+              complete_sample = 1,
+              j_max = 20,
+              i_max = 50,
+              keep_years = [2015, 2015],
+              achb_crit = 1,
+              uniform_min = 14,
+              uniform_max = 150,
+              p_scores = [14/1502, 782/1502, 298/1502, 382/1502, 26/1502],
+              output_folder = 'output_files/across_all/',
+              random_seed = 24)
+
+pseudo_scales(file = 'meds_de_branded.csv',
+              version = 'across',
+              complete_sample = 0,
+              j_max = 20,
+              i_max = 50,
+              keep_years = [2015, 2015],
+              achb_crit = 1,
+              uniform_min = 14,
+              uniform_max = 150,
+              p_scores = [14/1502, 782/1502, 298/1502, 382/1502, 26/1502],
+              output_folder = 'output_files/across_achb/',
+              random_seed = 24)
+
+pseudo_scales(file = 'meds_de_branded.csv',
+              version = 'within',
+              complete_sample = 1,
+              j_max = 20,
+              i_max = 250,
+              keep_years = [2015, 2015],
+              achb_crit = 1,
+              output_folder = 'output_files/within_all/',
+              random_seed = 24)
+
+pseudo_scales(file = 'meds_de_branded.csv',
+              version = 'within',
+              complete_sample = 0,
+              j_max = 20,
+              i_max = 250,
+              keep_years = [2015, 2015],
+              achb_crit = 1, 
+              output_folder = 'output_files/within_achb/',
+              random_seed = 24))
+```
