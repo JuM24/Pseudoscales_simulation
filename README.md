@@ -1,5 +1,5 @@
 # Pseudoscales simulation code
-Code to reproduce emulation of target trial for the effect of the use of hearing aids on dementia in people with hearing loss in UKBB.
+Code to reproduce the simulation study for the effect of anticholinergic burden versus polypharmacy in UK Biobank.
 
 ## Required files
 The below table lists the UK Biobank field IDs that are required for the analyses.
