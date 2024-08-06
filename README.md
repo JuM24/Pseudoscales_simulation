@@ -43,7 +43,7 @@ Field ID | Description
 `130798-130834` * | Metabolic disorder date
 `40005`, `40006`, `40013` | Cancer
 `41259` |	Hospital inpatient records ("hesin.txt")
-`42038` | GP prescription records ("gp_registrations.txt")
+`42038` | GP registration records ("gp_registrations.txt")
 `42039` | GP prescription records ("gp_scripts.csv")
 `42040` | GP clinical event records ("gp_clinical.txt")
 
