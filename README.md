@@ -1,5 +1,5 @@
-# TITLE
-Code to reproduce emulation of target trial for the effect of the use of hearing aids on dementia in people with hearing loss in UKBB.
+# Pseudoscales simulation code
+Code to reproduce the simulation study for the effect of anticholinergic burden versus polypharmacy in UK Biobank.
 
 ## Required files
 The below table lists the UK Biobank field IDs that are required for the analyses.
@@ -43,7 +43,7 @@ Field ID | Description
 `130798-130834` * | Metabolic disorder date
 `40005`, `40006`, `40013` | Cancer
 `41259` |	Hospital inpatient records ("hesin.txt")
-`42038` | GP prescription records ("gp_registrations.txt")
+`42038` | GP registration records ("gp_registrations.txt")
 `42039` | GP prescription records ("gp_scripts.csv")
 `42040` | GP clinical event records ("gp_clinical.txt")
 
@@ -69,7 +69,7 @@ Additionally, the following files are required:
 
 ## Running the code
 
-1. Run the scripts with the prefixes "`0_`" to "`8_`" sequentially. Short descriptions are below (they are also available within each script):
+1. Run the scripts with the prefixes "`0_`" to "`9_`" sequentially. Short descriptions are below (they are also available within each script):
 - `0_extract_variables.R`: extract the field IDs from the UK Biobank masterfile and save them as an “.Rds” file.
 - `1_` files: the final output (“data_period.csv”) indicates the periods of continuous ascertainment using the algorithm developed by Darke et al. ([![DOI](https://img.shields.io/badge/DOI-10.1093/jamia/ocab260-blue)](https://doi.org/10.1093/jamia/ocab260)).
 - `2_registration_periods.py`: further processing of the output frin the previous step to enable downstream analyses. Writes `data_period_long.csv` to folder.
@@ -80,3 +80,5 @@ Additionally, the following files are required:
 - `7_simulate_pseudoscales.py`: defines the function to perform the pseudoscales simulation. The details of the arguments are provided in the script. 
 - `8_1_run_simulation.py`: executes the function to reproduce the pseudoscales in the manuscript. The code runs `pseudo_scales()` (defined in the step above) 4x: (1) across-sampling for general polypharmacy, (2) across-sampling for anticholinergic polypharmacy, (3) within-sampling for general polypharmacy, and (4) within-sampling for anticholinergic polypharmacy.
 - `8_2_modelling.R`: executes the functions `combine_scales()`, `prepare_scales()`, and `outcome_effect_parallel()` for the four sets of simulated pseudoscales from the previous step. The functions have high RAM requirements due to the size of the data. The "core_number" argument for `outcome_effect_parallel` might need to be altered, depending on the machine that the code is being run on.
+- `9_analysis.R`: runs descriptive and inferential statistics on the models.
+
