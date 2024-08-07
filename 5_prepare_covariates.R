@@ -856,6 +856,9 @@ cancer_d$cancer_breast <- 0
 cancer_d$cancer_breast[!is.na(cancer_d$cancer_breast_date)] <- 1
 cancer_d$cancer_ovary <- 0
 cancer_d$cancer_ovary[!is.na(cancer_d$cancer_ovary_date)] <- 1
+cancer_d$cancer_prostate_ovary <- 0
+cancer_d$cancer_prostate_ovary[cancer_d$cancer_prostate == 1 |
+                                 cancer_d$cancer_ovary == 1] <- 1
 rm(cancer_colon, icd9_colon, icd10_colon, cancer_prostate, icd9_prostate, 
    icd10_prostate, cancer_lung, icd9_lung, icd10_lung, cancer_breast, icd9_breast, 
    icd10_breast, cancer_ovary, icd9_ovary, icd10_ovary, cancer)
@@ -1058,8 +1061,10 @@ hear$hear_loss_ab_nodate[(hear$hear_loss_a_nodate == 1 & is.na(hear$hear_loss_b_
 # get earliest of both UKB dates and set that as the source of the diagnosis
 hear <- hear %>%
   mutate(date_hear_loss_ab = pmin(date_hear_loss_a, date_hear_loss_b, na.rm = TRUE),
-         source_hear_loss_ab = ifelse((date_hear_loss_a < date_hear_loss_b & !is.na(date_hear_loss_a)) | 
-                                        is.na(date_hear_loss_b), source_hear_loss_a, source_hear_loss_b))
+         source_hear_loss_ab = ifelse((date_hear_loss_a < date_hear_loss_b & 
+                                         !is.na(date_hear_loss_a)) | 
+                                        is.na(date_hear_loss_b), 
+                                      source_hear_loss_a, source_hear_loss_b))
 
 # now let's include the objective hearing assessment (SRT)
 # create a new variable indicating SRT for 'better' ear for each visit (lower score means better hearing)

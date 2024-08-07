@@ -8,7 +8,7 @@
 
 file_path <- '' # path to the folder where the UKKB phenotype file is located 
 file_name <- '' # name of the UKBB phenotype file
-output_path <- '' # path to the folder where the GitHub repo content is
+output_path <- '' # path to the folder where the GitHub repo content was saved
 
 setwd(fle_path)
 

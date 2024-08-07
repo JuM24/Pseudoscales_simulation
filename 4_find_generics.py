@@ -15,7 +15,8 @@ drugs, (3) counts for brand names replaced by generic names. (2) and (3) also
 have columns with values for the simple (non-regex) search terms (i.e., 
 simple search of drug name).
 
-It also DESCRIBE HERE WHAT THE STATISTICS FILE CONTAINS
+It also outputs .csv files with some statistics on the numbers of found &
+renamed drugs in the sample.
 
 """
 
