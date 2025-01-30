@@ -704,9 +704,11 @@ outcome_effect_parallel <- function(version,
   all_outcomes <- merge(scale_length, all_outcomes, by = 'scale_name')
   # if survival modelling, also output the data needed for curve construction
   if (model_type == 'survival'){
-    saveRDS(all_outcomes, file = paste0('output_files/', output_file_name))
-    saveRDS(survival_data, file = paste0('output_files/', output_file_name,
-                                         '_survival_data.Rds'))
+    saveRDS(all_outcomes, file = paste0('output_files/', 
+                                        output_file_name))
+    saveRDS(survival_data, file = paste0('output_files/', 
+                                         'survival_data_', 
+                                         output_file_name))
     return(list(all_outcomes, survival_data))
   } else{
     saveRDS(all_outcomes, file = paste0('output_files/',
@@ -877,7 +879,7 @@ smote_df <- function(df,
   dup_size <- floor((sum(df_new[[outcome_name]] == '0') / 
                        sum(df_new[[outcome_name]] == '1'))/3)
   # determine ordinal variables (as opposed to nominal) - required for KNN
-  ordinals <- c('alc_freq_0', 'phys_act', 'depressed_0', 'lonely_0', 'sol_isol_0')
+  ordinals <- c('alc_freq_0', 'phys_act', 'depressed_0', 'lonely_0')
   ordinals <- ordinals[ordinals %in% names(df_new)] 
   # ordinal variables to numeric (required for KNN)
   df_new[ordinals] <- lapply(df_new[ordinals], as.numeric)
@@ -972,7 +974,7 @@ run_models <- function(df,
     high_cutoff <- quantile(df[[exposure]], 0.75)
     lowest_25 <- df[df[[exposure]] <= low_cutoff, ]
     lowest_25$exposure_binary <- 'low'
-    highest_25 <- df[df[[exposure]] > high_cutoff, ]
+    highest_25 <- df[df[[exposure]] >= high_cutoff, ]
     highest_25$exposure_binary <- 'high'
     df_dich <- rbind(lowest_25, highest_25)
     df_dich$exposure_binary <- as.factor(df_dich$exposure_binary)

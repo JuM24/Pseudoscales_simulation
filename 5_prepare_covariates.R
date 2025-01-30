@@ -196,23 +196,8 @@ alcohol[alcohol == -3] <- NA
 ## level of physical activity in the past 4 weeks:
 phys_act <- data_all %>%
   select(eid, starts_with('X6164.0')) %>%
-  mutate(phys_act_0 = apply(select(., X6164.0.0), 1, 
-                            function(x) phys_act_classify(x))) %>%
-  mutate(phys_act_1 = apply(select(., X6164.0.1), 1, 
-                            function(x) phys_act_classify(x))) %>%
-  mutate(phys_act_2 = apply(select(., X6164.0.2), 1, 
-                            function(x) phys_act_classify(x))) %>%
-  mutate(phys_act_3 = apply(select(., X6164.0.3), 1, 
-                            function(x) phys_act_classify(x))) %>%
-  mutate(phys_act_4 = apply(select(., X6164.0.4), 1, 
-                            function(x) phys_act_classify(x))) %>%
-  rename(id = eid)
-
-phys_act$phys_act <- pmax(phys_act$phys_act_0,
-                          phys_act$phys_act_1,
-                          phys_act$phys_act_2,
-                          phys_act$phys_act_3,
-                          phys_act$phys_act_4, na.rm = TRUE)
+  mutate(across(starts_with('X6164.0'), ~ sapply(., phys_act_classify))) %>%
+  mutate(phys_act = pmax(X6164.0.0, X6164.0.1, X6164.0.2, X6164.0.3, X6164.0.4, na.rm = TRUE))
 
 phys_act <- phys_act %>%
   select(id, phys_act)
@@ -382,6 +367,16 @@ colnames(death) <- c('id', 'death_date')
 death$death_date <- as.Date(death$death_date, format = '%Y-%m-%d')
 death$death <- 0; death$death[!is.na(death$death_date)] <- 1
 
+
+## transport accidents
+transp_acc_codes <- unique(inpatient[(grep('^V', inpatient$diagnosis)), 'diagnosis'])
+transp_acc <- inpatient %>%
+  filter(version == 'icd10' & diagnosis %in% transp_acc_codes) %>%
+  arrange(date) %>%
+  distinct(id, .keep_all = TRUE) %>%
+  select(id, date) %>%
+  rename(transp_acc_date = date)
+transp_acc$transp_acc <- 1
 
 
 
@@ -1336,12 +1331,13 @@ data_provider_last$data_provider_inpatient_last[
 covs <- Reduce(function(x, y) merge(x, y, by = 'id', all = TRUE), 
                list(alcohol, cognition, dems, deprivation,
                     education, phys_act, pollution, smoking,
-                    social, cancer_d, cns_dis, death, dementia, delirium,
+                    social, cancer_d, cns_dis, 
+                    death, dementia, delirium, transp_acc,
                     diabetes, hear, hyperchol, hypertension,  metabolic_dis, 
                     mood_ado, nutr_dis, outcomes, psych_ado, sleep_vision,
                     endocrine_dis, data_provider_freq, data_provider_last)) %>%
   # NAs to 0s
-  mutate(across(c(vision_problem, sleep_dis_any, cerebrovascular,
+  mutate(across(c(transp_acc, vision_problem, sleep_dis_any, cerebrovascular,
                   respiratory, hepatic, flu, heart, cancer_colon, 
                   cancer_prostate, cancer_lung, cancer_breast, cancer_ovary,
                   cancer_prostate_ovary, cns_cancer, cns_any), 
