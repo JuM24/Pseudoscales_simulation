@@ -733,7 +733,7 @@ prep_for_analysis <- function(df,
     relocate(drug_number_unique, .before = sampling_time)
   
   # remove Scottish records for dementia (due to lack of pollution data)
-  if (outcome_name == 'dementia'){
+  if (outcome_name == 'dementia' | length(unique(df$sampling_time)) == 3){
     df$data_provider_imputed <- as.character(df$data_provider_imputed)
     df <- filter(df, data_provider_imputed != '2')
     df$data_provider_imputed <- as.factor(df$data_provider_imputed)
