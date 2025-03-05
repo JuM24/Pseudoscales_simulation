@@ -96,7 +96,7 @@ meds.loc[meds['prescription']=='unknown', 'prescription'] = np.nan
 
 
 # remove participants that have opted outs
-opt_out = pd.read_csv('participant_opt_out.csv')
+opt_out = pd.read_csv('participant_opt_out.csv', header = None)
 opt_out.columns = ['id']
 meds['id'] = meds['id'].astype(str)
 opt_out['id'] = opt_out['id'].astype(str)
@@ -108,14 +108,14 @@ meds = meds.loc[meds['prescription'].notnull()]
 meds = meds.loc[meds['date'].notnull(), :]
 invalid_dates = ["01/01/1901", "02/02/1902", "03/03/1903", "07/07/2037"]
 meds = meds.loc[~meds['date'].isin(invalid_dates), :]
-#remove unnecessary columns
+# remove unnecessary columns
 meds.drop(['read_code','bnf','dmd','prescription_read'], axis=1, inplace=True)
 # change all prescriptions to strings
 meds['prescription'] = meds.prescription.astype(str)
-#remove potential white-space from the front of prescription names
+# remove potential white-space from the front of prescription names
 meds['prescription'] = meds.loc[:,'prescription'].apply(str.strip)
-#remove all '|' characters, as it will be used as a column separator
+# remove all '|' characters, as it will be used as a column separator
 meds['prescription'] = meds['prescription'].str.replace('|', ' ', regex = False)
 
-#export to .csv
+# export to .csv
 meds.to_csv('output_files/meds_cleaned.csv', index=False, header=True, sep='|')

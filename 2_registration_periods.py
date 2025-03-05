@@ -52,7 +52,7 @@ periods.drop(['index'], inplace = True, axis = 1)
 periods.columns = ['eid', 'year', 'year_present']
 
 # remove participants that have opted outs
-opt_out = pd.read_csv('participant_opt_out.csv')
+opt_out = pd.read_csv('participant_opt_out.csv', header = None)
 opt_out.columns = ['id']
 periods['eid'] = periods['eid'].astype(str)
 opt_out['id'] = opt_out['id'].astype(str)
