@@ -200,6 +200,7 @@ phys_act <- data_all %>%
   mutate(phys_act = pmax(X6164.0.0, X6164.0.1, X6164.0.2, X6164.0.3, X6164.0.4, na.rm = TRUE))
 
 phys_act <- phys_act %>%
+  rename(id = eid) %>%
   select(id, phys_act)
 
 
@@ -1184,7 +1185,7 @@ inpatient_freq <- rbind(inpatient_constant, inpatient_flux_freq) %>%
 diagnoses_dates_dt <- diagnoses_dates %>%
   filter(eid %in% multi_source$eid) %>%
   filter(!is.na(epistart)) %>%
-  data.table::as.data.table(diagnoses_dates)
+  data.table::as.data.table(.)
 inpatient_flux_last <- as.data.frame(diagnoses_dates_dt[, .(epistart = max(epistart, na.rm = TRUE)), by = eid])
 inpatient_flux_last <- merge(inpatient_flux_last, subset(diagnoses_dates, select = c(eid, epistart, dsource)), 
                              by = c('eid', 'epistart'), all.x = TRUE) %>%
