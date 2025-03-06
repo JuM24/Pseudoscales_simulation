@@ -223,10 +223,6 @@ prepare_scales <- function(version, outcome_name, year_range){
   df <- merge(year_first, sex_age, by = 'id')
   df <- merge(df, outcome, by = 'id', all.x = TRUE)
   
-  # remove those that don't want to participate in the study anymore
-  opt_outs <- read.csv('participant_opt_out.csv', header = FALSE)
-  df <- filter(df, !id %in% opt_outs$V1)
-  
   ## choose first year to include for AChB averaging
   # for those for whom sampling started in 2015 or later, choose that year 
   # as first year of achb sampling
