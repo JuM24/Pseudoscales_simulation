@@ -323,9 +323,9 @@ model_0 <- '
             g =~ VNR_0 + RT_0 + VisMem_0 + ProsMem_0 + NM_0
             
 '
-fit_0 <- lavaan::sem(model_0, data=cognition, missing='fiml.x')
+fit_0 <- sem(model_0, data=cognition, missing='fiml.x')
 # extract the g-values
-cognition$g_0 <- as.vector(lavaan::predict(fit_0, cognition)) 
+cognition$g_0 <- as.vector(predict(fit_0, cognition)) 
 cognition <- cognition %>%
   select(id, g_0)
 rm(fit_0)
