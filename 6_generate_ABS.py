@@ -13,11 +13,10 @@ indicating the yearly anticholinergic burden according to each anticholinergic s
 """
 import pandas as pd
 
-meds = pd.read_csv('output_files/meds_debranded.csv', \
+meds = pd.read_csv('output_files/meds_de-branded.csv', \
                    header=0, sep="|", dtype = str, encoding = 'cp1252')
 # a list of all anticholinergic drugs (according to any scale) that were found in the sample
-achb = pd.read_csv ('output_files/aas_in_sample.csv') 
-achb = achb.loc[achb['drug'].isin(set(meds.name_generic)), 'drug'].tolist()
+achb = pd.read_csv('output_files/aas_in_sample.csv')
 # remove unnecessary column 'n'
 achb.drop(['n'], axis = 1, inplace = True)
 meds['application'] = meds['application'].astype(int).copy()
