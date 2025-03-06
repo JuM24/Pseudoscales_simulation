@@ -936,7 +936,7 @@ smote_df <- function(df,
 
 
 
-# function to run logistic/survival models and save the estimates
+## function to run logistic/survival models and save the estimates
 run_models <- function(df, 
                        model_type, 
                        exposure, 
@@ -1030,4 +1030,228 @@ run_models <- function(df,
                            HR_comp, HR_comp_low, HR_comp_high)
   }
   return(list(model_summary, estimates))
+}
+
+
+
+
+
+## returns the inferential statistics for across-sampling
+# - outcome_name: name of the outcome (used as column name in the data frame
+#   and as part of the file name)
+# - model_type: 'logistic' vs. 'survival'
+# - adjustment: 'unadjusted' vs. 'adjusted'
+# - smote: can be TRUE only for model_type = 'logistic'
+# - competing_death: can be TRUE only for model_type = 'survival'
+# - period: which prescription period is used (string)
+
+output_results <- function(outcome_name, model_type, adjustment, smote, 
+                           competing_death, period){
+  
+  # create data frame for outputing results
+  output_df <- data.frame(matrix(ncol = 9, nrow = 12))
+  colnames(output_df) <- c('outcome', 'effect_type', 'adjusted', 'smote', 'comp_risk',
+                           'metric', 'type', 'period', 'estimate')
+  
+  output_df$metric <- c(rep('range', 3), rep('SI', 3), rep('median', 3),
+                        rep('n_sig', 3))
+  output_df$type <- rep(c('general', 'anticholinergic', 'ABS'), 4)
+  output_df$period <- period
+  
+  
+  # set name of outcome column
+  output_df$outcome <- outcome_name
+  
+  # set adjustment column
+  if (adjustment == 'unadjusted'){
+    output_df$adjusted <- 0
+  } else if (adjustment == 'adjusted'){
+    output_df$adjusted <- 1
+  }
+  
+  
+  if (model_type == 'logistic'){
+    
+    # set effect type column
+    output_df$effect_type <- 'OR'
+    # in logistic regression there is no competing risk adjustment
+    output_df$comp_risk <- 0
+    
+    # read in logistic model output
+    outcome_all <- readRDS(paste0('output_files/across_all_', 
+                                  outcome_name, 
+                                  '_', 
+                                  adjustment, 
+                                  '.Rds'))
+    outcome_achb <- readRDS(paste0('output_files/across_achb_', 
+                                   outcome_name, 
+                                   '_', 
+                                   adjustment, 
+                                   '.Rds'))
+    
+    # determine which effect estimate to use
+    if (smote == FALSE){
+      effect_type <- 'OR'
+      se_type <- 'OR_SE'
+      # set SMOTE column
+      output_df$smote <- 0
+    } else{
+      effect_type <- 'OR_smote'
+      se_type <- 'OR_SE_smote'
+      output_df$smote <- 1
+    }
+    outcome_all$effect <- outcome_all[[effect_type]]
+    outcome_achb$effect <- outcome_achb[[effect_type]]
+    outcome_all$se <- outcome_all[[se_type]]
+    outcome_achb$se <- outcome_achb[[se_type]]
+    
+    # calculate CIs
+    outcome_all$CI_low <- outcome_all$effect - 1.96*outcome_all$se
+    outcome_all$CI_high <- outcome_all$effect + 1.96*outcome_all$se
+    outcome_achb$CI_low <- outcome_achb$effect - 1.96*outcome_achb$se
+    outcome_achb$CI_high <- outcome_achb$effect + 1.96*outcome_achb$se
+    
+    # read in survival models
+  } else if (model_type == 'survival'){
+    output_df$effect_type <- 'HR'
+    output_df$smote <- 0
+    
+    outcome_all <- readRDS(paste0('output_files/across_all_', 
+                                  outcome_name, 
+                                  '_', 
+                                  adjustment, 
+                                  '_Cox.Rds'))
+    outcome_achb <- readRDS(paste0('output_files/across_achb_', 
+                                   outcome_name, 
+                                   '_', 
+                                   adjustment, 
+                                   '_Cox.Rds'))
+    
+    surv_all <- readRDS(paste0('output_files/survival_data_across_all_', 
+                               outcome_name, 
+                               '_', 
+                               adjustment, 
+                               '_Cox.Rds'))
+    surv_achb <- readRDS(paste0('output_files/survival_data_across_achb_', 
+                                outcome_name, 
+                                '_', 
+                                adjustment, 
+                                '_Cox.Rds'))
+    
+    # if competing risks set to TRUE, we use cause-specific hazard
+    if (competing_death == FALSE | outcome_name == 'death'){
+      output_df$comp_risk <- 0
+      
+      outcome_all$effect <- outcome_all$HR
+      outcome_achb$effect <- outcome_achb$HR
+      outcome_all$se <- outcome_all$HR_SE
+      outcome_achb$se <- outcome_achb$HR_SE
+      
+      outcome_all$CI_low <- outcome_all$effect - 1.96*outcome_all$se
+      outcome_all$CI_high <- outcome_all$effect + 1.96*outcome_all$se
+      outcome_achb$CI_low <- outcome_achb$effect - 1.96*outcome_achb$se
+      outcome_achb$CI_high <- outcome_achb$effect + 1.96*outcome_achb$se
+      
+      # if competing risks set to TRUE, we use subdistribution hazard
+    } else if (competing_death == TRUE){
+      output_df$comp_risk <- 1
+      
+      outcome_all$effect <- outcome_all$HR_comp
+      outcome_achb$effect <- outcome_achb$HR_comp
+      
+      outcome_all$CI_low <- outcome_all$HR_comp_low
+      outcome_all$CI_high <- outcome_all$HR_comp_high
+      
+      outcome_achb$CI_low <- outcome_achb$HR_comp_low
+      outcome_achb$CI_high <- outcome_achb$HR_comp_high
+    }
+  }
+  
+  
+  # subset
+  pseudo_all <- outcome_all %>%
+    filter(type == 'pseudo')
+  pseudo_achb <- outcome_achb %>%
+    filter(type == 'pseudo')
+  
+  scales_all <- outcome_all %>%
+    filter(type == 'achb' & scale_name != 'score_achb_poly')
+  scales_achb <- outcome_achb %>%
+    filter(type == 'achb' & scale_name != 'score_achb_poly')
+  
+  # minima and maxima for effects
+  output_df$estimate[output_df$metric == 'range' &
+                       output_df$type == 'general'] <- 
+    paste0(as.character(round(range(pseudo_all$effect)[1], 3)),
+           ' - ',
+           as.character(round(range(pseudo_all$effect)[2], 3)))
+  
+  output_df$estimate[output_df$metric == 'range' &
+                       output_df$type == 'anticholinergic'] <- 
+    paste0(as.character(round(range(pseudo_achb$effect)[1], 3)),
+           ' - ',
+           as.character(round(range(pseudo_achb$effect)[2], 3)))
+  
+  output_df$estimate[output_df$metric == 'range' &
+                       output_df$type == 'ABS'] <- 
+    paste0(as.character(round(range(scales_all$effect)[1], 3)),
+           ' - ',
+           as.character(round(range(scales_all$effect)[2], 3)))
+  
+  
+  # median of effects
+  output_df$estimate[output_df$metric == 'median' &
+                       output_df$type == 'general'] <- median(pseudo_all$effect)
+  
+  output_df$estimate[output_df$metric == 'median' &
+                       output_df$type == 'anticholinergic'] <- median(pseudo_achb$effect)
+  
+  output_df$estimate[output_df$metric == 'median' &
+                       output_df$type == 'ABS'] <- median(scales_all$effect)
+  
+  
+  
+  # calculate the simulation interval
+  effects_all <- sort(pseudo_all$effect)
+  effects_achb <- sort(pseudo_achb$effect)
+  # calculate the 2.5th and 97.5th percentiles
+  low_bound_all <- quantile(effects_all, 0.025)
+  up_bound_all <- quantile(effects_all, 0.975)
+  low_bound_achb <- quantile(effects_achb, 0.025)
+  up_bound_achb <- quantile(effects_achb, 0.975)
+  
+  output_df$estimate[output_df$metric == 'SI' &
+                       output_df$type == 'general'] <- 
+    paste0(as.character(round(low_bound_all[[1]], 3)), 
+           ' - ',
+           as.character(round(up_bound_all[[1]], 3)))
+  
+  output_df$estimate[output_df$metric == 'SI' &
+                       output_df$type == 'anticholinergic'] <- 
+    paste0(as.character(round(low_bound_achb[[1]], 3)), 
+           ' - ',
+           as.character(round(up_bound_achb[[1]], 3)))
+  
+  output_df$estimate[output_df$metric == 'SI' &
+                       output_df$type == 'ABS'] <- NA
+  
+  
+  # calculate 95% CI to see which proportion would be significant
+  output_df$estimate[output_df$metric == 'n_sig' &
+                       output_df$type == 'general'] <- 
+    nrow(filter(pseudo_all, CI_low > 1))
+  
+  output_df$estimate[output_df$metric == 'n_sig' &
+                       output_df$type == 'anticholinergic'] <- 
+    nrow(filter(pseudo_achb, CI_low > 1))
+  
+  output_df$estimate[output_df$metric == 'n_sig' &
+                       output_df$type == 'ABS'] <- 
+    nrow(filter(scales_all, CI_low > 1))
+  
+  if (model_type == 'logistic'){
+    return(list(output_df, pseudo_all, pseudo_achb, scales_all))
+  } else if (model_type == 'survival'){
+    return(list(output_df, pseudo_all, pseudo_achb, scales_all, surv_all, surv_achb))
+  }
 }
