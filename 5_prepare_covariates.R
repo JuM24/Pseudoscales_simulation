@@ -6,8 +6,11 @@ library(lavaan)
 
 source('helper_functions.R')
 
+opt_outs <- read.csv('participant_opt_out.csv', header = FALSE)
+
 # main dataset
-data_all <- readRDS('vars_pseudoscales.Rds')
+data_all <- readRDS('vars_pseudoscales.Rds') %>%
+  filter(!eid %in% opt_outs$V1)
 
 
 # define time period used
@@ -320,9 +323,9 @@ model_0 <- '
             g =~ VNR_0 + RT_0 + VisMem_0 + ProsMem_0 + NM_0
             
 '
-fit_0 <- sem(model_0, data=cognition, missing='fiml.x')
+fit_0 <- lavaan::sem(model_0, data=cognition, missing='fiml.x')
 # extract the g-values
-cognition$g_0 <- as.vector(predict(fit_0, cognition)) 
+cognition$g_0 <- as.vector(lavaan::predict(fit_0, cognition)) 
 cognition <- cognition %>%
   select(id, g_0)
 rm(fit_0)
@@ -573,7 +576,8 @@ inpatient$date <- as.Date(inpatient$date, format = '%Y-%m-%d')
 
 # GP diagnoses
 meds_diagnoses <- data.table::fread('gp_clinical.txt', sep='\t', header=TRUE, quote='')
-meds_diagnoses <- as.data.frame(meds_diagnoses)
+meds_diagnoses <- as.data.frame(meds_diagnoses) %>%
+  filter(!eid %in% opt_outs$V1)
 meds_diagnoses <- subset(meds_diagnoses, select = c(eid, data_provider, event_dt, read_2, read_3))
 colnames(meds_diagnoses) <- c('id', 'data_provider', 'date_primary', 'read2', 'read3')
 meds_diagnoses <- filter(meds_diagnoses, 
@@ -933,7 +937,8 @@ inpatient$date <- as.Date(inpatient$date, format = '%Y-%m-%d')
 
 # GP diagnoses
 gp_diagnoses <- data.table::fread('gp_clinical.txt', sep='\t', header=TRUE, quote='') # field ID 42040
-gp_diagnoses <- as.data.frame(gp_diagnoses)
+gp_diagnoses <- as.data.frame(gp_diagnoses)%>%
+  filter(!eid %in% opt_outs$V1)
 gp_diagnoses <- subset(gp_diagnoses, select = c(eid, data_provider, event_dt, 
                                                 read_2, read_3))
 colnames(gp_diagnoses) <- c('id', 'data_provider', 'date_primary', 'read2', 'read3')
@@ -1145,8 +1150,7 @@ hear <- transform(hear, date_hear_loss_any =
 rm(diagnoses, diagnosis_codes, gp_diagnoses, read2, read3, inpatient)
 gc()
 
-## source of inpatient diagnosis 
-# TODO (from doi: )
+## source of inpatient diagnosis (from Mur et al., 2024: https://github.com/JuM24/HA-and-dementia-in-UKBB)
 
 # get source from uk field ID 40022 (for those that have been to hospital and have just one data provider, this is the default)
 inpatient_source <- data_all %>% 
@@ -1157,7 +1161,8 @@ inpatient_source[inpatient_source == ''] <- NA
 multi_source <- filter(inpatient_source, !is.na(X40022.0.1)) %>% select(eid)
 
 # get most common source of hospital diagnoses for those with several records
-diagnoses_dates <- read.csv('hesin.txt', sep='\t')  # UKB category 2006
+diagnoses_dates <- read.csv('hesin.txt', sep='\t') %>% # UKB category 2006
+  filter(!eid %in% opt_outs$V1)
 diagnoses_dates$epistart <- as.Date(diagnoses_dates$epistart, format = '%d/%m/%Y')
 
 # those with just one data provider throughout the entire period
@@ -1204,7 +1209,9 @@ inpatient_last <- rbind(inpatient_constant, inpatient_flux_last) %>%
 
 
 # For those that do not have inpatient data providers, we will first use GP registrations to fill the gaps
-gp_reg <- read.csv('gp_registrations.txt', sep='\t', header=TRUE, quote='') %>% rename(id = eid)
+gp_reg <- read.csv('gp_registrations.txt', sep='\t', header=TRUE, quote='') %>% 
+  rename(id = eid) %>%
+  filter(!id %in% opt_outs$V1)
 gp_reg[gp_reg == ''] <- NA
 gp_reg <- gp_reg %>%
   select(id, data_provider, reg_date, deduct_date) %>%
@@ -1262,7 +1269,7 @@ gp_reg_last <- rbind(gp_reg_constant, gp_reg_flux_last)
 # for people without good registration data, we will use primary care diagnosis data
 gp_diagnoses <- data.table::fread('gp_clinical.txt', sep='\t', header=TRUE, quote='') %>%
   as.data.frame() %>%
-  filter(!eid %in% gp_reg_freq$id) %>%
+  filter(!eid %in% gp_reg_freq$id & !eid %in% opt_outs$V1) %>%
   select(eid, data_provider, event_dt) %>%
   mutate(across(event_dt, ~as.Date(., format = '%d/%m/%Y')))
 
