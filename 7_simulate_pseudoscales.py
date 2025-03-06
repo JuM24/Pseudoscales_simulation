@@ -49,7 +49,7 @@ import pandas as pd
 
 
 
-def pseudo_scales(file = 'meds_de_branded.csv', 
+def pseudo_scales(file = 'meds_de-branded.csv', 
                   version = '', 
                   complete_sample = 1, 
                   j_max = 20, 
