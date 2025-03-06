@@ -102,8 +102,8 @@ for i in range(len(combos)):
         print(count)
 print('Identified generic terms for combination drugs in ' + \
       str(len(meds.loc[meds['name_generic'].notnull()])) + ' rows.')
-meds.to_csv('meds_combos.csv', index=False, header=True, sep = '|')
-combos.to_csv('combos_stats.csv', index=False, header=True)
+meds.to_csv('output_files/meds_combos.csv', index=False, header=True, sep = '|')
+combos.to_csv('output_files/combos_stats.csv', index=False, header=True)
 
 # B    
 meds_small = meds.loc[meds['name_generic'].isnull()].copy()
@@ -139,8 +139,8 @@ meds.loc[meds_small.index, 'name_generic'] = \
     meds_small.loc[meds_small.index, 'name_generic'].copy()
 print('Identified generic names in ' + \
       str(len(meds_small.loc[meds_small['name_generic'].notnull()])) + ' rows.')
-meds.to_csv('meds_generics.csv', index=False, header=True, sep = '|')
-generics_df.to_csv('meds_generics_stats.csv', index=False, header=True)
+meds.to_csv('output_files/meds_generics.csv', index=False, header=True, sep = '|')
+generics_df.to_csv('output_files/meds_generics_stats.csv', index=False, header=True)
 
 # C
 meds['name_brand'] = None
@@ -210,6 +210,6 @@ meds.loc[meds['prescription'].str.contains("(?:^|[^a-z])" + 'tab' + \
                                            "(?:$|[^a-z])"), 'application'] = 0
 print('Administration routes after additional search for relevant terms: ')
 print(meds['application'].value_counts())
-meds.to_csv('output_files/meds_de_branded.csv', index=False, header=True, sep = '|')
-drug_names.to_csv('meds_de_branded_stats.csv', index=False, header=True)
+meds.to_csv('output_files/meds_de-branded.csv', index=False, header=True, sep = '|')
+drug_names.to_csv('output_files/meds_de-branded_stats.csv', index=False, header=True)
 print('\n' + 'Finished.')
