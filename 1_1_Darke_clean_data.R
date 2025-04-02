@@ -12,6 +12,15 @@ library(stringr)
 library(ukbbhelpr)
 source('Darke_setup.R')
 
+# potentially create required directorie
+ifelse(!dir.exists(file.path('output_files')),
+       dir.create(file.path('output_files')),
+       'Directory Exists')
+
+ifelse(!dir.exists(file.path('temp')),
+       dir.create(file.path('temp')),
+       'Directory Exists')
+
 # Participant data -------------------------------------------------------------
 
 # Load data and extract variables
