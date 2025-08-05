@@ -226,7 +226,7 @@ phys_act <- phys_act %>%
 # create subsets of the education frame for each assessment; change -7 to NA, 
 # and set to 1 if graduate degree present
 education <- data_all %>% 
-  select(eid, X6138.0.0) %>% 
+  select(eid, starts_with('X6138.0')) %>% 
   rename(id = eid)
 education[education == -3] <- NA
 education <- education %>%
