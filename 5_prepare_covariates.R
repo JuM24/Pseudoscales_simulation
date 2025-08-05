@@ -309,6 +309,7 @@ social <- social %>%
 cognition <- data_all %>% 
   select(eid, X20016.0.0, X20018.0.0, X20023.0.0, X399.0.2, X4282.0.0)
 colnames(cognition) <- c('id', 'VNR_0', 'ProsMem_0', 'RT_0','VisMem_0', 'NM_0')
+cognition$NM_0[cognition$NM_0 == -1] <- NA
 # remove outliers 
 cognition[, c('VNR_0', 'ProsMem_0', 'RT_0','VisMem_0', 'NM_0')] <- 
   lapply(cognition[, c('VNR_0', 'ProsMem_0', 'RT_0','VisMem_0', 'NM_0')], 
