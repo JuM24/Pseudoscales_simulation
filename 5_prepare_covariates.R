@@ -373,17 +373,6 @@ death$death_date <- as.Date(death$death_date, format = '%Y-%m-%d')
 death$death <- 0; death$death[!is.na(death$death_date)] <- 1
 
 
-## transport accidents
-transp_acc_codes <- unique(inpatient[(grep('^V', inpatient$diagnosis)), 'diagnosis'])
-transp_acc <- inpatient %>%
-  filter(version == 'icd10' & diagnosis %in% transp_acc_codes) %>%
-  arrange(date) %>%
-  distinct(id, .keep_all = TRUE) %>%
-  select(id, date) %>%
-  rename(transp_acc_date = date)
-transp_acc$transp_acc <- 1
-
-
 
 ## mood disorders
 mood_ado <- data_all %>% 
@@ -553,7 +542,6 @@ icd10_brain <- c('D32', 'D320', 'D321', 'D329', 'D33', 'D331', 'D332', 'D333',
                  'C712', 'C713', 'C714', 'C715', 'C716', 'C717', 'C718', 'C719', 'C793')
 cancer_brain <- cancer_subtype(cancer, icd9_brain, icd10_brain, 'brain') %>%
   rename(cns_cancer_date = cancer_brain_date)
-cancer_brain$cns_cancer <- 0
 cancer_brain$cns_cancer[!is.na(cancer_brain$cns_cancer_date)] <- 1
 
 
