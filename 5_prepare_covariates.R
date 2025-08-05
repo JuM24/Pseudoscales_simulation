@@ -231,7 +231,7 @@ education <- data_all %>%
 education[education == -3] <- NA
 education <- education %>%
   filter(rowSums(is.na(select(., -id))) != ncol(.) - 1) %>%
-  mutate(education_0 = as.integer(rowSums(select(., X6138.0.0) == 1, na.rm = TRUE) > 0)) %>%
+  mutate(education_0 = as.integer(rowSums(select(., starts_with('X6138.0')) == 1, na.rm = TRUE) > 0)) %>%
   select(id, education_0)
 
 
