@@ -912,7 +912,7 @@ diagnosis_codes <- read.csv('hearing_codes.csv') # EHR codes for HL and HA
 # remove duplicate codes within one source (so within ICD10, or ICD9, etc.)
 diagnosis_codes <- distinct(diagnosis_codes, code, source, .keep_all = TRUE)
 
-# hearing loss and hearing aid ascertainment
+# hearing loss ascertainment
 # inpatient diagnoses
 inpatient <- readRDS('output_files/inpatient.Rds') # field IDs 41270, 41271, 41280, and 41281
 colnames(inpatient)[colnames(inpatient) == 'diagnosis'] <- 'code'
@@ -1001,7 +1001,6 @@ diagnoses <- distinct(diagnoses, id, diag, .keep_all = TRUE)
 
 # separate into data frames of distinct diagnoses, remove duplicates, and bind again; 
 # then merge with main data frame; tag the ones without dates (they are going to be removed later)
-# do this for hearing loss, hearing aid use, hearing aid use cessation, and cochlear implants
 diagnoses <- distinct(diagnoses, id, .keep_all = TRUE) %>%
   rename(hear_loss_code = diag_code, hear_loss_diag = diag, hear_loss_date = diag_date, 
          hear_loss_year = diag_year, hear_loss_desc = diag_desc,
